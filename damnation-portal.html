@@ -1,0 +1,1485 @@
+<title>Damnation Portal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+:root{
+  --void:#0b0605;
+  --char:#1c1010;
+  --char2:#241414;
+  --char3:#2c1616;
+  --line:#432120;
+  --blood:#7d0e17;
+  --blood-bright:#c81729;
+  --ember:#ff6a2b;
+  --ember-dim:#a83f18;
+  --sulfur:#b7a339;
+  --parchment:#ecdfc0;
+  --parchment-dim:#cdbb8f;
+  --ink:#2b1a12;
+  --smoke:#c9a79c;
+  --smoke-dim:#8a6d64;
+  --good:#7fae4f;
+  --bad:#e0483c;
+  --font-display:'Pirata One', 'Copperplate', serif;
+  --font-body:'Spectral', Georgia, 'Times New Roman', serif;
+  --font-mono:'JetBrains Mono', 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+body{
+  background:var(--void);
+  color:var(--parchment);
+  font-family:var(--font-body);
+  margin:0;
+  padding:0 16px;
+  padding-block:32px;
+  cursor:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='36'><path d='M4 2 L4 14 M14 2 L14 14 M24 2 L24 14 M4 14 Q14 20 24 14 M14 18 L14 34' stroke='%23c81729' stroke-width='3' fill='none' stroke-linecap='round'/></svg>") 14 2, auto;
+  position:relative;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+#emberCanvas{
+  position:fixed; inset:0; width:100%; height:100%;
+  pointer-events:none; z-index:0; opacity:0.8;
+}
+.pulse-overlay{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(ellipse at 50% 30%, rgba(200,23,41,0.16), transparent 60%);
+  animation:heartbeat 3.2s ease-in-out infinite;
+}
+@keyframes heartbeat{
+  0%,100%{opacity:0.55;}
+  45%{opacity:1;}
+  55%{opacity:0.7;}
+}
+body.tremor{animation:tremor 0.4s ease;}
+@keyframes tremor{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-6px,2px);}
+  40%{transform:translate(5px,-3px);}
+  60%{transform:translate(-4px,-2px);}
+  80%{transform:translate(3px,3px);}
+}
+@media (prefers-reduced-motion: reduce){
+  .pulse-overlay{animation:none; opacity:0.6;}
+  body.tremor{animation:none;}
+  #emberCanvas{opacity:0.3;}
+}
+main, header, footer{position:relative; z-index:1;}
+.wrap{max-width:720px; margin:0 auto;}
+header.hero{max-width:720px; margin:0 auto 28px; text-align:center;}
+.eyebrow{
+  font-family:var(--font-mono); letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--sulfur); font-size:0.72rem; margin:0 0 10px;
+}
+.drip-title{
+  font-family:var(--font-display); font-size:clamp(2.4rem,7vw,4rem);
+  margin:0; position:relative; line-height:1.1;
+  background:linear-gradient(180deg, var(--blood-bright) 0%, var(--blood) 60%, var(--ink) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-wrap:balance;
+  filter:drop-shadow(0 2px 10px rgba(200,20,30,0.35));
+}
+.drip{
+  position:absolute; top:100%; width:6px; height:14px; background:var(--blood-bright);
+  border-radius:0 0 50% 50%; opacity:0.85; animation:drip 4s ease-in infinite;
+  box-shadow:0 0 6px rgba(200,20,30,0.6);
+}
+@keyframes drip{
+  0%{height:8px; opacity:0.9;}
+  70%{height:26px; opacity:0.9;}
+  85%{opacity:0.3;}
+  100%{height:8px; opacity:0.9;}
+}
+@media (prefers-reduced-motion: reduce){ .drip{animation:none; height:16px;} }
+.tagline{color:var(--smoke); font-style:italic; margin:14px 0 22px; font-size:0.98rem;}
+.tabs{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.tab{
+  font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.05em; text-transform:uppercase;
+  background:var(--char2); color:var(--smoke); border:1px solid var(--line); border-radius:3px;
+  padding:10px 16px; cursor:pointer;
+}
+.tab.active{background:var(--blood); color:var(--parchment); border-color:var(--blood-bright);}
+
+.contract{
+  max-width:720px; margin:0 auto; background:var(--char);
+  border:1px solid var(--line); border-radius:6px; padding:28px clamp(16px,4vw,36px) 36px;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.4), 0 30px 60px -20px rgba(0,0,0,0.7), inset 0 0 90px rgba(120,10,15,0.08);
+}
+.clause{border-top:1px dashed var(--line); padding:26px 0;}
+.clause:first-child{border-top:none; padding-top:6px;}
+.clause-num{
+  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase;
+  color:var(--ember); margin:0 0 4px; display:flex; align-items:center; gap:8px;
+}
+.clause-num .seal{
+  display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
+  border:1px solid var(--ember-dim); border-radius:50%; font-size:0.6rem; color:var(--char);
+  background:transparent; transition:background 0.3s, color 0.3s;
+}
+.clause.sealed .clause-num .seal{background:var(--good); color:var(--char); border-color:var(--good);}
+.clause h2{
+  font-family:var(--font-display); font-size:1.5rem; margin:0 0 12px; color:var(--parchment);
+  text-wrap:balance;
+}
+.hint{color:var(--smoke-dim); font-size:0.85rem; margin:8px 0 0;}
+.status{font-family:var(--font-mono); font-size:0.78rem; margin:8px 0 0; min-height:1.1em;}
+.status.ok{color:var(--good);}
+.status.err{color:var(--bad);}
+label.field-label{display:block; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--smoke); margin-bottom:6px;}
+input[type=text], input[type=email]{
+  width:100%; background:var(--char2); border:1px solid var(--line); color:var(--parchment);
+  border-radius:4px; padding:11px 12px; font-family:var(--font-body); font-size:1rem;
+}
+input[type=text]:disabled{opacity:0.4;}
+input:focus{outline:2px solid var(--ember-dim); outline-offset:1px;}
+
+.arena{position:relative; height:96px;}
+.falling-label{
+  position:absolute; left:0; top:0; z-index:2;
+  background:var(--sulfur); color:var(--ink); font-family:var(--font-mono);
+  font-size:0.72rem; letter-spacing:0.08em; padding:10px 14px; border-radius:4px;
+  cursor:grab; user-select:none; box-shadow:0 6px 16px rgba(0,0,0,0.5);
+  animation:fall 0.7s cubic-bezier(.5,0,.6,1.4) both;
+  touch-action:none;
+}
+.falling-label.grabbed{cursor:grabbing;}
+@keyframes fall{from{top:-120px; opacity:0;} to{top:0; opacity:1;}}
+.arena input{position:absolute; left:0; top:36px; width:100%;}
+
+.imp-arena{position:relative; height:100px; background:var(--char2); border:1px solid var(--line); border-radius:4px; margin-top:10px; overflow:hidden;}
+.imp-btn{
+  position:absolute; left:10px; top:32px;
+  background:var(--blood); color:var(--parchment); border:1px solid var(--blood-bright);
+  border-radius:4px; padding:10px 14px; font-family:var(--font-mono); font-size:0.78rem;
+  cursor:pointer; transition:left 0.28s ease, top 0.28s ease; white-space:nowrap;
+}
+.rune-block{
+  background:var(--char2); border:1px solid var(--line); border-radius:4px;
+  padding:10px; margin-top:12px; text-align:center; overflow:hidden;
+}
+canvas#runeCanvas{max-width:100%; touch-action:none; cursor:not-allowed;}
+.smtp-log{
+  background:#050807; border:1px solid #163018; border-radius:4px; padding:10px 12px; margin-top:12px;
+  font-family:var(--font-mono); font-size:0.72rem; line-height:1.6; color:#6fdc7f;
+  min-height:1.4em; white-space:pre-wrap; word-break:break-all;
+}
+.smtp-log .dim{color:#3a7a43;}
+.smtp-log .warn{color:var(--sulfur);}
+.cipher-toggle{
+  background:none; border:1px solid var(--line); color:var(--smoke); font-family:var(--font-mono);
+  font-size:0.72rem; padding:6px 10px; border-radius:3px; cursor:pointer; margin-top:10px;
+}
+.cipher-grid{
+  display:grid; grid-template-columns:repeat(6,1fr); gap:4px; margin-top:10px;
+  font-family:var(--font-mono); font-size:0.78rem; text-align:center;
+}
+.cipher-grid div{background:var(--char2); border:1px solid var(--line); border-radius:3px; padding:5px 0; color:var(--smoke);}
+.cipher-grid span{display:block; color:var(--sulfur); font-size:0.95rem;}
+.decode-row{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+.decode-row input{flex:1; min-width:140px;}
+.decode-row button, .primary-btn{
+  background:var(--blood); color:var(--parchment); border:1px solid var(--blood-bright);
+  border-radius:4px; padding:11px 16px; font-family:var(--font-mono); font-size:0.78rem; cursor:pointer;
+}
+
+.rule-list{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
+.rule-list li{
+  font-family:var(--font-mono); font-size:0.82rem; color:var(--smoke); display:flex; gap:8px; align-items:baseline;
+  opacity:0; transform:translateY(-4px); animation:reveal 0.4s ease forwards;
+}
+@keyframes reveal{to{opacity:1; transform:none;}}
+.rule-list li.pass{color:var(--good);}
+.rule-list li .mark{width:1.2em; display:inline-block;}
+.sum-readout{font-family:var(--font-mono); font-size:0.75rem; color:var(--smoke-dim); margin-top:6px;}
+
+.buffer-display{
+  font-family:'Comic Sans MS','Comic Sans',cursive; font-size:1.2rem; letter-spacing:0.3em; background:var(--char2);
+  border:1px solid var(--line); border-radius:4px; padding:12px; min-height:1.4em; color:var(--parchment);
+  margin-top:10px;
+}
+.keyboard{
+  display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; margin-top:12px;
+}
+.keyboard button{
+  background:var(--char2); border:1px solid var(--line); color:var(--parchment);
+  font-family:'Comic Sans MS','Comic Sans','Chalkboard SE',cursive; font-size:1rem; font-weight:700;
+  padding:10px 0; border-radius:3px; cursor:pointer;
+}
+.keyboard button:hover{border-color:var(--ember-dim);}
+.kb-row{display:flex; gap:8px; margin-top:10px;}
+.kb-row button{flex:1;}
+.kb-backspace{background:var(--char3) !important;}
+.oauth-tag{font-family:'Comic Sans MS','Comic Sans',cursive; font-size:0.7rem; color:var(--sulfur); margin:10px 0 0;}
+
+.reels{display:flex; gap:14px; margin-top:10px; flex-wrap:wrap;}
+.reel-col{flex:1; min-width:90px; text-align:center;}
+.reel-col .reel-name{font-family:var(--font-mono); font-size:0.68rem; color:var(--smoke-dim); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
+.reel{
+  height:120px; overflow-y:scroll; scroll-snap-type:none; background:var(--char2);
+  border:1px solid var(--line); border-radius:4px; position:relative;
+  -ms-overflow-style:none; scrollbar-width:thin;
+  touch-action:none;
+}
+.reel.reversed{box-shadow:inset 0 0 0 1px var(--bad);}
+.reel-pad{height:40px;}
+.reel-item{height:40px; display:flex; align-items:center; justify-content:center; color:var(--smoke); font-family:var(--font-mono);}
+.reel-item.centered{color:var(--sulfur); font-size:1.1rem;}
+.reel-frame{position:absolute; top:40px; left:0; right:0; height:40px; border-top:1px solid var(--ember-dim); border-bottom:1px solid var(--ember-dim); pointer-events:none;}
+
+.phone-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:14px 10px; margin-top:12px;}
+@media (max-width:480px){.phone-grid{grid-template-columns:repeat(5,1fr); gap:10px 6px;}}
+.digit-col{text-align:center;}
+.digit-readout{
+  font-family:var(--font-mono); font-size:1.3rem; color:var(--parchment); margin-bottom:4px;
+  background:var(--char2); border:1px solid var(--line); border-radius:4px; padding:4px 0;
+}
+.digit-col input[type=range]{
+  writing-mode:vertical-lr; direction:rtl; width:26px; height:80px; margin:0 auto; accent-color:var(--blood-bright);
+}
+.digit-col.wobble input[type=range]{animation:wobble 0.35s ease;}
+@keyframes wobble{0%,100%{transform:translateX(0);}30%{transform:translateX(-3px);}60%{transform:translateX(3px);}}
+.digit-col .cursed-tag{display:block; font-size:0.6rem; color:var(--bad); font-family:var(--font-mono); margin-top:4px; visibility:hidden;}
+.digit-col.reveal-cursed .cursed-tag{visibility:visible;}
+.digit-col.sinking input[type=range]{filter:brightness(0.7);}
+.lock-btn{
+  display:block; margin:6px auto 0; width:22px; height:22px; border-radius:3px; cursor:pointer;
+  background:var(--char2); border:1px solid var(--line); color:var(--smoke-dim); font-size:0.7rem; line-height:1;
+}
+.lock-btn.locked{background:var(--good); border-color:var(--good); color:var(--char);}
+
+.terms-box{
+  position:relative; height:220px; overflow-y:auto; background:var(--parchment); color:var(--ink);
+  border:1px solid var(--parchment-dim); border-radius:4px 4px 0 0; padding:16px; margin-top:10px;
+  font-size:0.86rem; line-height:1.5;
+}
+.terms-box h3{font-family:var(--font-display); font-size:1.02rem; margin:0 0 6px;}
+.terms-box p{margin:0 0 12px;}
+.article{transition:opacity 0.6s ease, filter 0.6s ease;}
+.article.locked{opacity:0.1; filter:blur(1.5px); pointer-events:none;}
+.terms-footer{
+  background:var(--char2); border:1px solid var(--parchment-dim); border-top:none; border-radius:0 0 4px 4px;
+  padding:8px 12px; font-family:var(--font-mono); font-size:0.68rem; color:var(--smoke);
+  display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;
+}
+.terms-footer .count{color:var(--sulfur);}
+.sign-area{margin-top:14px; opacity:0.35; pointer-events:none; transition:opacity 0.3s;}
+.sign-area.unlocked{opacity:1; pointer-events:auto;}
+canvas#signPad{
+  width:100%; height:110px; background:var(--parchment); border:1px solid var(--line); border-radius:4px;
+  touch-action:none; cursor:crosshair;
+}
+.dodge-wrap{position:relative; height:70px; margin-top:12px; border:1px dashed var(--line); border-radius:4px; display:none;}
+.dodge-wrap.show{display:block;}
+.dodge-btn{
+  position:absolute; left:10px; top:15px; background:var(--sulfur); color:var(--ink); border:none;
+  border-radius:4px; padding:10px 14px; font-family:var(--font-mono); font-size:0.75rem; cursor:pointer;
+  transition:left 0.18s ease, top 0.18s ease;
+}
+
+.trial-label{font-family:var(--font-mono); font-size:0.75rem; color:var(--sulfur); margin:0 0 8px;}
+.emoji-grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:4px; max-width:340px;}
+.emoji-grid button{
+  font-size:1.3rem; background:var(--char2); border:1px solid var(--line); border-radius:6px;
+  padding:8px 0; cursor:pointer;
+}
+.emoji-grid button:hover{border-color:var(--ember-dim);}
+@media (max-width:420px){ .emoji-grid{grid-template-columns:repeat(5,1fr); max-width:100%;} }
+
+.seal-btn{
+  width:100%; margin-top:24px; position:relative; overflow:hidden;
+  background:var(--char3); border:1px solid var(--blood-bright); color:var(--parchment);
+  font-family:var(--font-display); font-size:1.3rem; letter-spacing:0.03em;
+  padding:18px; border-radius:6px; cursor:pointer;
+}
+.seal-btn .fill{
+  position:absolute; inset:0; width:0%; background:linear-gradient(90deg, var(--blood), var(--blood-bright));
+  z-index:0; transition:width 0.05s linear;
+}
+.seal-btn span.label{position:relative; z-index:1;}
+.summary{font-family:var(--font-mono); font-size:0.78rem; color:var(--smoke-dim); margin-top:14px; white-space:pre-line;}
+
+.patience{
+  position:fixed; bottom:16px; right:16px; z-index:5; width:220px; background:var(--char);
+  border:1px solid var(--line); border-radius:6px; padding:10px 12px; font-family:var(--font-mono);
+  font-size:0.68rem; color:var(--smoke); box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+.patience .bar{height:5px; background:var(--char2); border-radius:3px; overflow:hidden; margin-top:6px;}
+.patience .bar i{display:block; height:100%; background:var(--blood-bright); width:100%; transition:width 1s linear;}
+@media (max-width:480px){.patience{left:16px; right:16px; width:auto;}}
+
+.flash{position:fixed; inset:0; background:var(--blood-bright); opacity:0; pointer-events:none; z-index:20; transition:opacity 0.25s ease;}
+.flash.on{opacity:0.5; transition:opacity 0.05s;}
+
+.modal{position:fixed; inset:0; z-index:30; background:rgba(6,3,3,0.85); display:flex; align-items:center; justify-content:center; padding:20px;}
+.modal-card{
+  max-width:440px; background:var(--char); border:1px solid var(--blood-bright); border-radius:8px;
+  padding:30px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,0.8);
+}
+.modal-card h2{font-family:var(--font-display); font-size:1.8rem; color:var(--parchment); margin:0 0 10px;}
+.modal-card p{color:var(--smoke); font-size:0.9rem;}
+.modal-card pre{
+  text-align:left; background:var(--char2); border:1px solid var(--line); border-radius:4px;
+  padding:12px; font-family:var(--font-mono); font-size:0.75rem; color:var(--parchment-dim);
+  overflow-x:auto; white-space:pre-wrap;
+}
+.modal-close{
+  margin-top:16px; background:var(--blood); color:var(--parchment); border:1px solid var(--blood-bright);
+  border-radius:4px; padding:10px 18px; font-family:var(--font-mono); font-size:0.8rem; cursor:pointer;
+}
+
+.drag-track{position:relative; height:48px; background:var(--char2); border:1px solid var(--line); border-radius:24px; margin-top:12px;}
+.drag-target{position:absolute; right:6px; top:6px; font-size:1.5rem;}
+.drag-handle{
+  position:absolute; left:6px; top:5px; width:36px; height:36px; border-radius:50%;
+  background:var(--blood); border:1px solid var(--blood-bright); display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; cursor:grab; touch-action:none;
+}
+.drag-handle.done{background:var(--good); border-color:var(--good);}
+
+footer{text-align:center; color:var(--smoke-dim); font-family:var(--font-mono); font-size:0.68rem; margin-top:30px;}
+</style>
+
+<canvas id="emberCanvas"></canvas>
+<div class="pulse-overlay"></div>
+<div class="flash" id="flashOverlay"></div>
+
+<header class="hero">
+  <p class="eyebrow">Eternal Services &mdash; Division of Souls</p>
+  <h1 class="drip-title" id="dripTitle">Damnation Portal
+    <span class="drip" style="left:8%; animation-delay:0s;"></span>
+    <span class="drip" style="left:27%; animation-delay:1.1s;"></span>
+    <span class="drip" style="left:52%; animation-delay:0.4s;"></span>
+    <span class="drip" style="left:71%; animation-delay:1.7s;"></span>
+    <span class="drip" style="left:90%; animation-delay:0.8s;"></span>
+  </h1>
+  <p class="tagline">Account creation should not be easy. We agree.</p>
+  <nav class="tabs">
+    <button class="tab active" id="tabRegisterBtn" type="button">Register the Damned</button>
+    <button class="tab" id="tabLoginBtn" type="button">Return, Wretch (Login)</button>
+  </nav>
+</header>
+
+<main>
+<section class="contract" id="panelRegister">
+
+  <div class="clause" data-key="username">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause I &mdash; Identification</p>
+    <h2>State Your Designation</h2>
+    <div class="arena" id="usernameArena">
+      <div class="falling-label" id="usernameLabel">SOUL DESIGNATION</div>
+      <input type="text" id="usernameInput" placeholder="Enter your designation" disabled>
+    </div>
+    <p class="hint">The seal has fallen across the ledger. Drag it clear before you may write your name.</p>
+    <p class="status" id="usernameStatus"></p>
+  </div>
+
+  <div class="clause" data-key="email">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause II &mdash; Correspondence</p>
+    <h2>Cursed Correspondence Address</h2>
+    <label class="field-label" for="emailInput">Address</label>
+    <input type="email" id="emailInput" placeholder="you@mortal-coil.example">
+    <div class="imp-arena" id="impArena">
+      <button class="imp-btn" id="impBtn" type="button">Relay via smtp.gmail.com</button>
+    </div>
+    <div class="smtp-log" id="smtpLog">&nbsp;</div>
+    <div id="runeSection" style="display:none;">
+      <p class="hint">The message has been relayed and transcribed into the Infernal Script for your protection. It cannot be copied &mdash; only witnessed. Decode it below.</p>
+      <div class="rune-block"><canvas id="runeCanvas" width="560" height="90"></canvas></div>
+      <button class="cipher-toggle" id="cipherToggleBtn" type="button">Reveal the Cipher Key</button>
+      <div class="cipher-grid" id="cipherGrid" style="display:none;"></div>
+      <div class="decode-row">
+        <input type="text" id="decodeInput" placeholder="Transliterate the code here">
+        <button type="button" id="decodeBtn">Verify Translation</button>
+      </div>
+    </div>
+    <p class="status" id="emailStatus"></p>
+  </div>
+
+  <div class="clause" data-key="password">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause III &mdash; The Blood Oath</p>
+    <h2>Compose Your Oath Phrase</h2>
+    <label class="field-label" for="passwordInput">Oath phrase (letters and digits only)</label>
+    <input type="text" id="passwordInput" placeholder="Begin typing to summon the requirements">
+    <ul class="rule-list" id="ruleList"></ul>
+    <p class="sum-readout" id="sumReadout"></p>
+
+    <p class="hint" style="margin-top:20px;">Now re-affirm the oath. The quill has been confiscated; you must compose it again key by key, and the keys do not sit still.</p>
+    <div class="buffer-display" id="confirmBuffer">&nbsp;</div>
+    <div class="keyboard" id="shuffleKeyboard"></div>
+    <div class="kb-row">
+      <button type="button" class="kb-backspace" id="confirmBackspace">&#8676; Undo Stroke</button>
+      <button type="button" class="primary-btn" id="confirmVerifyBtn">Verify the Oath</button>
+    </div>
+    <p class="status" id="passwordStatus"></p>
+  </div>
+
+  <div class="clause" data-key="dob">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause IV &mdash; Date of Damnation</p>
+    <h2>Spin the Wheels of Fate to Your Birth</h2>
+    <div class="reels">
+      <div class="reel-col">
+        <p class="reel-name">Day</p>
+        <div class="reel" id="reelDay"><div class="reel-frame"></div></div>
+      </div>
+      <div class="reel-col">
+        <p class="reel-name">Month</p>
+        <div class="reel" id="reelMonth"><div class="reel-frame"></div></div>
+      </div>
+      <div class="reel-col">
+        <p class="reel-name">Year</p>
+        <div class="reel" id="reelYear"><div class="reel-frame"></div></div>
+      </div>
+    </div>
+    <p class="hint">The reels do not sit still &mdash; they drift of their own accord, one turns against your hand, and none of them snap to place. Wrestle each into position.</p>
+    <p class="status" id="dobStatus"></p>
+  </div>
+
+  <div class="clause" data-key="phone">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause V &mdash; The Summoning Hotline</p>
+    <h2>Enter Ten Digits, One Cursed</h2>
+    <div class="phone-grid" id="phoneGrid"></div>
+    <p class="hint">One of these ten sliders has been hexed and runs backwards. Gravity governs the rest &mdash; every digit sinks back toward zero unless you seal it with the small latch beneath.</p>
+    <p class="status" id="phoneStatus"></p>
+  </div>
+
+  <div class="clause" data-key="terms">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause VI &mdash; The Contract Proper</p>
+    <h2>Read Every Word. We Will Know.</h2>
+    <div class="terms-box" id="termsBox"></div>
+    <div class="terms-footer" id="termsFooter">
+      <span id="termsProgress" class="count">Article 1 of 1</span>
+      <span id="termsCountdown">&nbsp;</span>
+    </div>
+    <div class="sign-area" id="signArea">
+      <p class="hint" id="signHint">Sign below to bind the Contract.</p>
+      <canvas id="signPad" width="600" height="220"></canvas>
+    </div>
+    <div class="dodge-wrap" id="dodgeWrap">
+      <button class="dodge-btn" id="dodgeBtn" type="button">I Have Signed In Blood</button>
+    </div>
+    <p class="status" id="termsStatus"></p>
+  </div>
+
+  <div class="clause" data-key="captcha">
+    <p class="clause-num"><span class="seal">&#10003;</span>Clause VII &mdash; Trial of Discernment</p>
+    <h2>Prove You Are Not an Angel</h2>
+    <p class="hint">Select the one true demon among the impostors. Three trials, no misses.</p>
+    <p class="trial-label" id="trialLabel">Trial 1 of 3</p>
+    <div class="emoji-grid" id="emojiGrid"></div>
+    <p class="status" id="captchaStatus"></p>
+  </div>
+
+  <button class="seal-btn" id="submitBtn" type="button">
+    <span class="fill" id="submitFill"></span>
+    <span class="label" id="submitLabel">Hold to Seal the Contract</span>
+  </button>
+  <p class="summary" id="registerSummary"></p>
+</section>
+
+<section class="contract" id="panelLogin" hidden>
+  <div class="clause" data-key="loginId" style="border-top:none;">
+    <p class="clause-num">Clause I &mdash; Recognition</p>
+    <h2>State Your Designation</h2>
+    <input type="text" id="loginUsername" placeholder="Your Soul Designation">
+  </div>
+  <div class="clause" data-key="loginPass">
+    <p class="clause-num">Clause II &mdash; Renewed Oath</p>
+    <h2>Recite Your Oath Phrase</h2>
+    <p class="hint">The quill remains confiscated.</p>
+    <div class="buffer-display" id="loginBuffer">&nbsp;</div>
+    <div class="keyboard" id="loginKeyboard"></div>
+    <div class="kb-row">
+      <button type="button" class="kb-backspace" id="loginBackspace">&#8676; Undo Stroke</button>
+    </div>
+  </div>
+  <div class="clause" data-key="loginCaptcha">
+    <p class="clause-num">Clause III &mdash; Proof of Diligence</p>
+    <h2>Drag the Pick to the Diamond</h2>
+    <div class="drag-track" id="dragTrack">
+      <span class="drag-target">&#128142;</span>
+      <div class="drag-handle" id="dragHandle">&#9935;</div>
+    </div>
+    <p class="status" id="loginCaptchaStatus"></p>
+  </div>
+  <button class="seal-btn" id="loginBtn" type="button">
+    <span class="fill" id="loginFill" style="width:0%; transition:none;"></span>
+    <span class="label">Consult the Ledger</span>
+  </button>
+  <p class="summary" id="loginSummary"></p>
+</section>
+</main>
+
+<div class="patience" id="patienceWidget">
+  <span id="patienceText">The Board's patience: measured, but finite.</span>
+  <div class="bar"><i id="patienceBar"></i></div>
+</div>
+
+<div class="modal" id="successModal" hidden>
+  <div class="modal-card">
+    <h2 id="modalTitle">Contract Sealed</h2>
+    <p id="modalBody">Your file has been opened.</p>
+    <pre id="modalDetails"></pre>
+    <button class="modal-close" id="modalCloseBtn" type="button">Return to Suffering</button>
+  </div>
+</div>
+
+<footer>Eternal Services is a fictional demonstration. No souls were harmed. No souls were saved, either.</footer>
+
+<script>
+(function(){
+"use strict";
+
+function $(sel, root){ return (root||document).querySelector(sel); }
+function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function shuffle(arr){
+  for(var i=arr.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  }
+  return arr;
+}
+function shake(){
+  document.body.classList.remove('tremor');
+  void document.body.offsetWidth;
+  document.body.classList.add('tremor');
+  setTimeout(function(){ document.body.classList.remove('tremor'); }, 420);
+}
+
+var state = {
+  username:false, email:false, password:false, confirm:false,
+  dob:false, phone:false, terms:false, captcha:false
+};
+
+function setStatus(el, msg, ok){
+  el.textContent = msg;
+  el.className = 'status' + (ok===true?' ok':ok===false?' err':'');
+}
+function seal(key){
+  state[key] = true;
+  var clause = $('.clause[data-key="'+key+'"]');
+  if(clause) clause.classList.add('sealed');
+}
+function unseal(key){
+  state[key] = false;
+  var clause = $('.clause[data-key="'+key+'"]');
+  if(clause) clause.classList.remove('sealed');
+}
+
+function initEmbers(){
+  var canvas = $('#emberCanvas');
+  var ctx = canvas.getContext('2d');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var particles = [];
+  var count = reduced ? 18 : 55;
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  for(var i=0;i<count;i++){
+    particles.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      r: 1 + Math.random()*2.4,
+      speed: 0.3 + Math.random()*0.9,
+      drift: (Math.random()-0.5)*0.6,
+      flick: Math.random()*Math.PI*2
+    });
+  }
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(var i=0;i<particles.length;i++){
+      var p = particles[i];
+      p.y -= p.speed;
+      p.x += p.drift;
+      p.flick += 0.05;
+      if(p.y < -10){ p.y = canvas.height + 10; p.x = Math.random()*canvas.width; }
+      var alpha = 0.4 + 0.4*Math.sin(p.flick);
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255,106,43,'+alpha.toFixed(2)+')';
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+function initTabs(){
+  var regBtn = $('#tabRegisterBtn'), logBtn = $('#tabLoginBtn');
+  var regPanel = $('#panelRegister'), logPanel = $('#panelLogin');
+  regBtn.addEventListener('click', function(){
+    regBtn.classList.add('active'); logBtn.classList.remove('active');
+    regPanel.hidden = false; logPanel.hidden = true;
+  });
+  logBtn.addEventListener('click', function(){
+    logBtn.classList.add('active'); regBtn.classList.remove('active');
+    logPanel.hidden = false; regPanel.hidden = true;
+  });
+}
+
+function initUsernameClause(){
+  var label = $('#usernameLabel');
+  var arena = $('#usernameArena');
+  var input = $('#usernameInput');
+  var status = $('#usernameStatus');
+  var dragging = false, offX=0, offY=0, curX=0, curY=0;
+
+  function rectsOverlap(a,b){
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+  }
+  function checkClear(){
+    var lr = label.getBoundingClientRect();
+    var ir = input.getBoundingClientRect();
+    if(!rectsOverlap(lr, ir)){
+      input.disabled = false;
+      setStatus(status, 'The seal has been cast aside. Write freely.', true);
+      label.style.opacity = '0.5';
+      label.style.cursor = 'default';
+      seal('username');
+    }
+  }
+  function pointerDown(e){
+    dragging = true;
+    label.classList.add('grabbed');
+    var r = label.getBoundingClientRect();
+    var arenaR = arena.getBoundingClientRect();
+    curX = r.left - arenaR.left; curY = r.top - arenaR.top;
+    offX = e.clientX - r.left; offY = e.clientY - r.top;
+    label.style.animation = 'none';
+    e.preventDefault();
+  }
+  function pointerMove(e){
+    if(!dragging) return;
+    var arenaR = arena.getBoundingClientRect();
+    curX = e.clientX - arenaR.left - offX;
+    curY = e.clientY - arenaR.top - offY;
+    label.style.left = curX+'px';
+    label.style.top = curY+'px';
+    checkClear();
+  }
+  function pointerUp(){
+    dragging = false;
+    label.classList.remove('grabbed');
+  }
+  label.addEventListener('pointerdown', pointerDown);
+  window.addEventListener('pointermove', pointerMove);
+  window.addEventListener('pointerup', pointerUp);
+  input.addEventListener('input', function(){
+    setStatus(status, 'Designation recorded: "'+input.value+'"', true);
+  });
+}
+
+var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var RUNES = [];
+for(var ri=0; ri<26; ri++){ RUNES.push(String.fromCodePoint(0x16A0+ri)); }
+function toRunes(str){
+  var out = '';
+  for(var i=0;i<str.length;i++){
+    var idx = ALPHA.indexOf(str[i].toUpperCase());
+    out += idx>=0 ? RUNES[idx] + ' ' : str[i];
+  }
+  return out.trim();
+}
+
+function initEmailClause(){
+  var emailInput = $('#emailInput');
+  var impArena = $('#impArena');
+  var impBtn = $('#impBtn');
+  var smtpLog = $('#smtpLog');
+  var runeSection = $('#runeSection');
+  var runeCanvas = $('#runeCanvas');
+  var runeCtx = runeCanvas.getContext('2d');
+  var cipherToggleBtn = $('#cipherToggleBtn');
+  var cipherGrid = $('#cipherGrid');
+  var decodeInput = $('#decodeInput');
+  var decodeBtn = $('#decodeBtn');
+  var status = $('#emailStatus');
+  var realCode = '';
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  impArena.addEventListener('pointermove', function(e){
+    var ar = impArena.getBoundingClientRect();
+    var br = impBtn.getBoundingClientRect();
+    var bx = br.left + br.width/2, by = br.top + br.height/2;
+    var dist = Math.hypot(e.clientX-bx, e.clientY-by);
+    if(dist < 70){
+      var maxX = ar.width - br.width - 6;
+      var maxY = ar.height - br.height - 6;
+      impBtn.style.left = clamp(Math.random()*maxX, 4, maxX)+'px';
+      impBtn.style.top = clamp(Math.random()*maxY, 4, maxY)+'px';
+    }
+  });
+
+  function logLine(text, cls){
+    var line = document.createElement('div');
+    if(cls) line.className = cls;
+    line.textContent = text;
+    smtpLog.appendChild(line);
+    smtpLog.scrollTop = smtpLog.scrollHeight;
+  }
+
+  var runeDrawTimer = null;
+  function drawRunes(code){
+    var w = runeCanvas.width, h = runeCanvas.height;
+    runeCtx.clearRect(0,0,w,h);
+    runeCtx.fillStyle = '#241414';
+    runeCtx.fillRect(0,0,w,h);
+    var glyphs = toRunes(code).replace(/ /g,'');
+    var n = glyphs.length;
+    var spacing = Math.min(70, (w-40)/Math.max(n,1));
+    var startX = (w - spacing*(n-1))/2;
+    for(var i=0;i<n;i++){
+      var cx = startX + i*spacing + (Math.random()-0.5)*6;
+      var cy = h/2 + (Math.random()-0.5)*14;
+      var rot = (Math.random()-0.5)*0.7;
+      var scale = 0.85 + Math.random()*0.4;
+      runeCtx.save();
+      runeCtx.translate(cx, cy);
+      runeCtx.rotate(rot);
+      runeCtx.scale(scale, scale);
+      runeCtx.fillStyle = 'rgba(183,163,57,'+(0.75+Math.random()*0.25).toFixed(2)+')';
+      runeCtx.font = (30+Math.random()*10)+'px serif';
+      runeCtx.textAlign = 'center';
+      runeCtx.textBaseline = 'middle';
+      runeCtx.fillText(glyphs[i], 0, 0);
+      runeCtx.restore();
+    }
+    for(var s=0;s<220;s++){
+      runeCtx.fillStyle = 'rgba(0,0,0,'+(Math.random()*0.25).toFixed(2)+')';
+      runeCtx.fillRect(Math.random()*w, Math.random()*h, 1.5, 1.5);
+    }
+    runeCtx.strokeStyle = 'rgba(125,14,23,0.35)';
+    runeCtx.lineWidth = 1;
+    for(var l=0;l<3;l++){
+      runeCtx.beginPath();
+      runeCtx.moveTo(Math.random()*w, Math.random()*h);
+      runeCtx.lineTo(Math.random()*w, Math.random()*h);
+      runeCtx.stroke();
+    }
+  }
+  function startRuneFlicker(code){
+    if(runeDrawTimer) clearInterval(runeDrawTimer);
+    drawRunes(code);
+    if(!reduced){
+      runeDrawTimer = setInterval(function(){ drawRunes(code); }, 900);
+    }
+  }
+  runeCanvas.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+  impBtn.addEventListener('click', function(){
+    if(!emailInput.value || emailInput.validity.typeMismatch || !emailInput.value.includes('@')){
+      setStatus(status, 'The relay refuses: that is not an address a demon can find.', false);
+      shake();
+      return;
+    }
+    impBtn.disabled = true;
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var code = '';
+    for(var i=0;i<6;i++){ code += letters[Math.floor(Math.random()*letters.length)]; }
+    realCode = code;
+    var addr = emailInput.value;
+    smtpLog.innerHTML = '';
+    setStatus(status, 'Relaying...', null);
+    var steps = [
+      [180, 'Connecting to smtp.gmail.com:465 (TLS)...'],
+      [420, '220 smtp.gmail.com ESMTP ready', 'dim'],
+      [640, 'EHLO eternal-services.hell', 'dim'],
+      [860, 'AUTH LOGIN accepted for noreply@eternal-services.hell', 'dim'],
+      [1080, 'MAIL FROM:<noreply@eternal-services.hell>', 'dim'],
+      [1300, 'RCPT TO:<' + addr + '>', 'dim'],
+      [1520, 'WARNING: recipient plane unverified, relaying anyway', 'warn'],
+      [1760, 'DATA', 'dim'],
+      [2000, '250 2.0.0 OK: queued as 6A66IMP0000', 'dim'],
+      [2260, 'Message transcribed into Infernal Script for transit security.']
+    ];
+    steps.forEach(function(s){
+      setTimeout(function(){ logLine(s[1], s[2]); }, s[0]);
+    });
+    setTimeout(function(){
+      runeSection.style.display = 'block';
+      startRuneFlicker(code);
+      setStatus(status, 'A message has arrived. It cannot be copied, screenshotted cleanly, or read twice the same way. Decode it above.', null);
+      impBtn.disabled = false;
+    }, 2500);
+  });
+
+  cipherToggleBtn.addEventListener('click', function(){
+    if(cipherGrid.style.display === 'none'){
+      cipherGrid.innerHTML = '';
+      for(var i=0;i<26;i++){
+        var d = document.createElement('div');
+        d.innerHTML = '<span>'+RUNES[i]+'</span>'+ALPHA[i];
+        cipherGrid.appendChild(d);
+      }
+      cipherGrid.style.display = 'grid';
+      cipherToggleBtn.textContent = 'Hide the Cipher Key';
+    } else {
+      cipherGrid.style.display = 'none';
+      cipherToggleBtn.textContent = 'Reveal the Cipher Key';
+    }
+  });
+
+  decodeBtn.addEventListener('click', function(){
+    if(decodeInput.value.trim().toUpperCase() === realCode){
+      setStatus(status, 'Correspondence verified. The Ministry is (mildly) satisfied.', true);
+      if(runeDrawTimer){ clearInterval(runeDrawTimer); runeDrawTimer = null; }
+      seal('email');
+    } else {
+      setStatus(status, 'Mistranslation detected. The imp sighs audibly.', false);
+      shake();
+    }
+  });
+}
+
+var SUFFERING_WORDS = ['pain','agony','woe','anguish','torment','misery','suffering','despair','doom','grief','sorrow'];
+function sumDigits(s){
+  var sum = 0;
+  for(var i=0;i<s.length;i++){ var c=s.charCodeAt(i); if(c>=48&&c<=57) sum += (c-48); }
+  return sum;
+}
+function passwordChecks(pw){
+  return [
+    { label:'At least 8 characters long', test: pw.length >= 8 },
+    { label:'Contains "666" somewhere within it', test: pw.indexOf('666') !== -1 },
+    { label:'Every digit in the phrase sums to exactly 66', test: sumDigits(pw) === 66 },
+    { label:'Contains a synonym for suffering', test: SUFFERING_WORDS.some(function(w){ return pw.toLowerCase().indexOf(w) !== -1; }) },
+    { label:'Does not contain "god" or "heaven"', test: !/god|heaven/i.test(pw) },
+    { label:'Total length under 20 characters', test: pw.length > 0 && pw.length < 20 }
+  ];
+}
+function initPasswordClause(){
+  var input = $('#passwordInput');
+  var list = $('#ruleList');
+  var sumReadout = $('#sumReadout');
+  var status = $('#passwordStatus');
+
+  function render(){
+    var pw = input.value;
+    var checks = passwordChecks(pw);
+    list.innerHTML = '';
+    var allPassSoFar = true;
+    for(var i=0;i<checks.length;i++){
+      if(!allPassSoFar) break;
+      var c = checks[i];
+      var li = document.createElement('li');
+      li.style.animationDelay = (i*0.05)+'s';
+      if(c.test) li.classList.add('pass');
+      li.innerHTML = '<span class="mark">'+(c.test?'&#10003;':'&#9702;')+'</span>'+c.label;
+      list.appendChild(li);
+      if(!c.test) allPassSoFar = false;
+    }
+    sumReadout.textContent = pw.length ? ('Current digit sum: '+sumDigits(pw)+' / 66') : '';
+    var complete = checks.every(function(c){ return c.test; });
+    if(complete && pw.length){
+      setStatus(status, 'The Oath Phrase is acceptable. For now.', true);
+      seal('password');
+    } else {
+      unseal('password');
+      if(pw.length) setStatus(status, 'The Oath is incomplete.', null); else setStatus(status,'',null);
+    }
+  }
+  input.addEventListener('input', render);
+  render();
+}
+
+function createShuffleKeyboard(containerEl, displayEl, backspaceEl, onChange){
+  var keys = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
+  shuffle(keys);
+  var buttons = [];
+  containerEl.innerHTML = '';
+  for(var i=0;i<keys.length;i++){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = keys[i];
+    containerEl.appendChild(b);
+    buttons.push(b);
+  }
+  var buffer = '';
+  function renderBuffer(){
+    var BULLET = String.fromCodePoint(0x2022), NBSP = String.fromCodePoint(0x00A0);
+    displayEl.textContent = buffer.length ? buffer.replace(/./g, BULLET) : NBSP;
+    onChange(buffer);
+  }
+  function reshuffle(){
+    var labels = buttons.map(function(b){ return b.textContent; });
+    shuffle(labels);
+    for(var i=0;i<buttons.length;i++){ buttons[i].textContent = labels[i]; }
+  }
+  buttons.forEach(function(b){
+    b.addEventListener('click', function(){
+      buffer += b.textContent;
+      renderBuffer();
+      reshuffle();
+    });
+  });
+  backspaceEl.addEventListener('click', function(){
+    buffer = buffer.slice(0,-1);
+    renderBuffer();
+    reshuffle();
+  });
+  renderBuffer();
+  return { getBuffer: function(){ return buffer; }, clear: function(){ buffer=''; renderBuffer(); } };
+}
+
+function initConfirmKeyboard(){
+  var passwordInput = $('#passwordInput');
+  var display = $('#confirmBuffer');
+  var kb = $('#shuffleKeyboard');
+  var backspace = $('#confirmBackspace');
+  var verifyBtn = $('#confirmVerifyBtn');
+  var status = $('#passwordStatus');
+  var kbApi = createShuffleKeyboard(kb, display, backspace, function(){});
+
+  verifyBtn.addEventListener('click', function(){
+    if(!state.password){
+      setStatus(status, 'Compose an acceptable Oath Phrase above first.', false);
+      shake();
+      return;
+    }
+    if(kbApi.getBuffer() === passwordInput.value){
+      setStatus(status, 'The Oath has been re-affirmed. It matches.', true);
+      seal('confirm');
+    } else {
+      setStatus(status, 'The re-affirmed Oath does not match. Begin again.', false);
+      shake();
+      kbApi.clear();
+    }
+  });
+}
+
+function buildReel(container, values, opts){
+  opts = opts || {};
+  var reversed = !!opts.reversed;
+  var driftSpeed = opts.drift || 0;
+  if(reversed) container.classList.add('reversed');
+
+  container.innerHTML = '<div class="reel-frame"></div>';
+  var padTop = document.createElement('div'); padTop.className='reel-pad'; container.appendChild(padTop);
+  var items = [];
+  values.forEach(function(v){
+    var el = document.createElement('div');
+    el.className = 'reel-item';
+    el.textContent = v;
+    container.appendChild(el);
+    items.push(el);
+  });
+  var padBottom = document.createElement('div'); padBottom.className='reel-pad'; container.appendChild(padBottom);
+
+  var itemHeight = 40;
+  var touched = false;
+  var userDriven = false;
+  var dragging = false, startY=0, startScroll=0;
+  var maxScroll = (items.length+1)*itemHeight - container.clientHeight;
+
+  function highlight(){
+    var idx = Math.round(container.scrollTop / itemHeight);
+    idx = clamp(idx, 0, items.length-1);
+    items.forEach(function(el,i){ el.classList.toggle('centered', i===idx); });
+    return idx;
+  }
+  var settleTimer = null;
+  function onScroll(){
+    highlight();
+    if(!userDriven) return;
+    touched = true;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(function(){
+      var idx = highlight();
+      container.dispatchEvent(new CustomEvent('reelsettled', { detail: { index: idx, value: values[idx] } }));
+    }, 300);
+  }
+  container.addEventListener('scroll', onScroll);
+  container.addEventListener('pointerdown', function(e){
+    dragging = true; userDriven = true; startY = e.clientY; startScroll = container.scrollTop;
+    container.setPointerCapture(e.pointerId);
+  });
+  container.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var delta = (e.clientY - startY) * (reversed ? 1 : -1);
+    container.scrollTop = startScroll + delta;
+  });
+  container.addEventListener('pointerup', function(){ dragging = false; });
+  container.addEventListener('pointercancel', function(){ dragging = false; });
+
+  var driftDir = 1;
+  if(driftSpeed && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    setInterval(function(){
+      if(dragging) return;
+      var next = container.scrollTop + driftSpeed*driftDir;
+      var max = Math.max(0, container.scrollHeight - container.clientHeight);
+      if(next <= 0){ next = 0; driftDir = 1; }
+      if(next >= max){ next = max; driftDir = -1; }
+      container.scrollTop = next;
+    }, 60);
+  }
+
+  highlight();
+  return {
+    isTouched: function(){ return touched; },
+    onSettle: function(cb){ container.addEventListener('reelsettled', function(e){ cb(e.detail); }); }
+  };
+}
+function initDobReels(){
+  var status = $('#dobStatus');
+  var touchedCount = { day:false, month:false, year:false };
+  var chosen = { day:null, month:null, year:null };
+  function maybeSeal(){
+    if(touchedCount.day && touchedCount.month && touchedCount.year){
+      setStatus(status, 'Date of Damnation set to '+chosen.day+' '+chosen.month+' '+chosen.year+'.', true);
+      seal('dob');
+    }
+  }
+  var days = []; for(var d=1;d<=31;d++) days.push(d);
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var years = []; for(var y=2015;y>=1930;y--) years.push(y);
+
+  var rDay = buildReel($('#reelDay'), days, {drift:0.35});
+  var rMonth = buildReel($('#reelMonth'), months, {drift:0.5, reversed:true});
+  var rYear = buildReel($('#reelYear'), years, {drift:0.3});
+  rDay.onSettle(function(det){ touchedCount.day=true; chosen.day=det.value; maybeSeal(); });
+  rMonth.onSettle(function(det){ touchedCount.month=true; chosen.month=det.value; maybeSeal(); });
+  rYear.onSettle(function(det){ touchedCount.year=true; chosen.year=det.value; maybeSeal(); });
+}
+
+function initPhoneSliders(){
+  var grid = $('#phoneGrid');
+  var status = $('#phoneStatus');
+  var cursedIndex = 4;
+  var digits = new Array(10).fill(0);
+  var locked = new Array(10).fill(false);
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  grid.innerHTML = '';
+
+  function refreshStatus(){
+    setStatus(status, 'Hotline number: '+digits.join(''), true);
+  }
+
+  for(var i=0;i<10;i++){
+    (function(i){
+      var col = document.createElement('div');
+      col.className = 'digit-col';
+      var readout = document.createElement('div');
+      readout.className = 'digit-readout';
+      readout.textContent = '0';
+      var slider = document.createElement('input');
+      slider.type = 'range'; slider.min = 0; slider.max = 9; slider.value = 0; slider.step = 1;
+      var lockBtn = document.createElement('button');
+      lockBtn.type = 'button';
+      lockBtn.className = 'lock-btn';
+      lockBtn.title = 'Lock this digit against gravity';
+      lockBtn.innerHTML = '&#128275;';
+      var tag = document.createElement('span');
+      tag.className = 'cursed-tag';
+      tag.textContent = 'cursed';
+      col.appendChild(readout);
+      col.appendChild(slider);
+      col.appendChild(lockBtn);
+      col.appendChild(tag);
+      grid.appendChild(col);
+
+      function computeDigit(){
+        var raw = parseInt(slider.value,10);
+        return i===cursedIndex ? (9-raw) : raw;
+      }
+      function apply(){
+        var val = computeDigit();
+        digits[i] = val;
+        readout.textContent = String(val);
+        seal('phone');
+        refreshStatus();
+      }
+      slider.addEventListener('input', function(){
+        apply();
+      });
+      slider.addEventListener('change', function(){
+        col.classList.add('wobble');
+        setTimeout(function(){ col.classList.remove('wobble'); }, 360);
+        apply();
+      });
+      lockBtn.addEventListener('click', function(){
+        locked[i] = !locked[i];
+        lockBtn.classList.toggle('locked', locked[i]);
+        lockBtn.innerHTML = locked[i] ? '&#128274;' : '&#128275;';
+      });
+
+      if(!reduced){
+        setInterval(function(){
+          if(locked[i]) return;
+          var raw = parseInt(slider.value,10);
+          if(raw <= 0) return;
+          slider.value = raw - 1;
+          col.classList.add('sinking');
+          setTimeout(function(){ col.classList.remove('sinking'); }, 300);
+          apply();
+        }, 3500 + i*140);
+      }
+    })(i);
+  }
+}
+
+var TERMS = [
+  ['Article 1 - Definitions', 'In this Contract, "Depositor" means the mortal completing this form; "the Board" means the governing body of Eternal Services, membership undisclosed; "Suffering" means the ordinary and continuing operation of this Contract; and "immediately" means at a time of the Board\'s choosing, which may precede or follow the event it modifies.'],
+  ['Article 2 - Grant and Assignment of the Soul', 'The Depositor hereby grants, transfers, assigns, and remands unto Eternal Services, its subsidiaries, franchisees, and any demon presently on commission, all right, title, and interest in and to their immortal soul, together with all appurtenances, easements, and improvements thereon, effective upon submission of this form and continuing in perpetuity across all planes, dimensions, and afterlives subsequently discovered.'],
+  ['Article 3 - Standard of Suffering', 'Suffering rendered under this Contract shall be of no less than "Bureaucratic" grade, being suffering indistinguishable from filing taxes, renewing a passport, or waiting on hold for customer support, but eternal. The Board reserves the right to upgrade the Depositor to "Poetic" or "Biblical" grades of suffering at its sole and unreviewable discretion.'],
+  ['Article 4 - Representations and Warranties', 'The Depositor represents and warrants that they are of sufficiently sound mind to click a button, that they have not previously sold this same soul to a competing afterlife, and that any prior warranties made by clergy, parents, or greeting cards regarding the disposition of said soul are hereby superseded in full.'],
+  ['Article 5 - Governing Law', 'This Contract shall be governed by, and construed in accordance with, Infernal Common Law as it has developed, unwritten and by precedent, since a time before written law existed to contradict it. Where Infernal Common Law is silent, the Board\'s mood on the day of the dispute shall govern.'],
+  ['Article 6 - The Ninth Circle Arbitration Clause', 'Any dispute, claim, or grievance arising under this Contract shall be settled by binding arbitration held in the Ninth Circle, before a panel of three (3) former middle managers, none of whom will have read the case file. The Depositor waives all right to a jury, an appeal, or a nice sit-down.'],
+  ['Article 7 - Force Majeure', 'Neither party shall be liable for delay or failure to perform any obligation under this Contract where such delay or failure results from causes beyond reasonable control, including but not limited to literal hellfire, brimstone shortages, celestial intervention, or a printer jam in the Records office.'],
+  ['Article 8 - Taxes and Levies', 'The Depositor acknowledges that a Soul Tax may be assessed at any time, in any amount, denominated in units of remaining patience, and that no receipt shall be issued. Disputing the assessment shall itself incur a further, larger assessment, by way of illustration.'],
+  ['Article 9 - Assignment and Subcontracting', 'Eternal Services may assign, sublicense, or subcontract any or all of its obligations, and the Depositor\'s soul along with them, to any affiliated entity, junior demon, or entity yet to be incorporated, without notice to, or consent from, the Depositor.'],
+  ['Article 10 - No Refunds, No Exceptions', 'All damnations are final. Eternal Services does not offer refunds, exchanges, store credit, or a moment\'s peace. "I didn\'t read the Contract" is not recognized as a defense in any of the Nine Circles, nor is "I read it but did not understand it," nor is silence.'],
+  ['Article 11 - Marketing Correspondence', 'The Depositor consents to receive promotional screaming at any hour, in any language, including languages that have not yet been invented, for the purpose of advertising extended warranties on their own suffering and unrelated timeshares in the Seventh Circle.'],
+  ['Article 12 - Electronic Signatures and Ichor', 'A signature affixed below, whether in blood, ichor, or a reasonably dark red gel pen, shall be deemed to carry the same legal weight as a signature given under duress, which is to say, full weight, cheerfully enforced.'],
+  ['Article 13 - Termination', 'This Contract has no termination date, termination clause, or early-exit fee schedule, because there is no early exit. For avoidance of doubt: this Article exists only so the Depositor may read the word "Termination" and feel, briefly, a small and misplaced hope.'],
+  ['Article 14 - Survival of Obligations', 'All obligations, penalties, and Soul Taxes accrued under this Contract shall survive any purported termination, cancellation, reincarnation, or minor miracle, and shall attach to any subsequent body, vessel, or houseplant the Depositor\'s soul may come to occupy.'],
+  ['Article 15 - Indemnification', 'The Depositor agrees to indemnify and hold harmless the Board, its officers, and its freelance tormentors against any claim, cost, or inconvenience arising from the Depositor\'s own suffering, howsoever caused, including suffering caused by reading this Article.'],
+  ['Article 16 - Limitation of Liability', 'In no event shall the Board\'s total liability to the Depositor, under any theory, exceed the value of one (1) sincere apology, which the Board does not, as a matter of policy, provide.'],
+  ['Article 17 - Severability', 'If any provision of this Contract is found by a competent tribunal to be unenforceable, that provision shall be severed, and the remaining provisions shall continue in full force, having grown slightly more resentful in the process.'],
+  ['Article 18 - Signature Required', 'This Contract is not valid until signed below. By scrolling this far, at the permitted pace, the Depositor affirms they have read the foregoing, understood little of it, and continued anyway, which the Board finds, on the whole, rather delightful.']
+];
+var UNLOCK_MS = 60000;
+
+function initTermsClause(){
+  var box = $('#termsBox');
+  var progressEl = $('#termsProgress');
+  var countdownEl = $('#termsCountdown');
+  var signArea = $('#signArea');
+  var signHint = $('#signHint');
+  var canvas = $('#signPad');
+  var ctx = canvas.getContext('2d');
+  var dodgeWrap = $('#dodgeWrap');
+  var dodgeBtn = $('#dodgeBtn');
+  var status = $('#termsStatus');
+  var scrolledToBottom = false;
+  var hasSigned = false;
+
+  box.innerHTML = '';
+  var articleEls = TERMS.map(function(pair, idx){
+    var wrap = document.createElement('div');
+    wrap.className = 'article';
+    wrap.dataset.idx = idx;
+    var h3 = document.createElement('h3'); h3.textContent = pair[0];
+    var p = document.createElement('p'); p.textContent = pair[1];
+    wrap.appendChild(h3); wrap.appendChild(p);
+    box.appendChild(wrap);
+    return wrap;
+  });
+
+  var unlockedIndex = 0;
+  var msLeft = UNLOCK_MS;
+
+  function paintLocks(){
+    articleEls.forEach(function(el, i){
+      el.classList.toggle('locked', i > unlockedIndex);
+    });
+  }
+  function allowedMax(){
+    var fullMax = Math.max(0, box.scrollHeight - box.clientHeight);
+    if(unlockedIndex >= articleEls.length-1) return fullMax;
+    var el = articleEls[unlockedIndex];
+    var boundary = el.offsetTop + el.offsetHeight - box.clientHeight + 24;
+    return clamp(boundary, 0, fullMax);
+  }
+  function fmtTime(ms){
+    var s = Math.max(0, Math.ceil(ms/1000));
+    var m = Math.floor(s/60); s = s%60;
+    return m+':'+(s<10?'0':'')+s;
+  }
+  function updateFooter(){
+    progressEl.textContent = 'Article ' + (unlockedIndex+1) + ' of ' + TERMS.length;
+    if(unlockedIndex >= TERMS.length-1){
+      countdownEl.textContent = 'Every article has been unlocked.';
+    } else {
+      countdownEl.textContent = 'Next article unlocks in ' + fmtTime(msLeft);
+    }
+  }
+  paintLocks();
+  updateFooter();
+
+  setInterval(function(){
+    if(unlockedIndex >= TERMS.length-1) return;
+    msLeft -= 1000;
+    if(msLeft <= 0){
+      unlockedIndex++;
+      msLeft = UNLOCK_MS;
+      paintLocks();
+      var max = allowedMax();
+      if(box.scrollTop > max) box.scrollTop = max;
+    }
+    updateFooter();
+  }, 1000);
+
+  box.addEventListener('scroll', function(){
+    var max = allowedMax();
+    if(box.scrollTop > max){
+      box.scrollTop = max;
+    }
+    if(unlockedIndex >= TERMS.length-1 && box.scrollTop + box.clientHeight >= box.scrollHeight - 4){
+      if(!scrolledToBottom){
+        scrolledToBottom = true;
+        signArea.classList.add('unlocked');
+        signHint.textContent = 'The Contract has been read, at the pace the Board permits. Sign below.';
+      }
+    }
+  });
+
+  function resizeCanvas(){
+    var ratio = window.devicePixelRatio || 1;
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = w*ratio; canvas.height = h*ratio;
+    ctx.scale(ratio, ratio);
+    ctx.strokeStyle = '#7d0e17';
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+  }
+  setTimeout(resizeCanvas, 0);
+
+  var drawing = false, lastX=0, lastY=0;
+  function pos(e){
+    var r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    if(!scrolledToBottom) return;
+    drawing = true;
+    var p = pos(e); lastX=p.x; lastY=p.y;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if(!drawing) return;
+    var p = pos(e);
+    ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
+    lastX=p.x; lastY=p.y;
+    if(!hasSigned){
+      hasSigned = true;
+      dodgeWrap.classList.add('show');
+      setStatus(status, 'A mark has been made. Now confirm it ' + String.fromCodePoint(0x2014) + ' if you can catch it.', null);
+    }
+  });
+  canvas.addEventListener('pointerup', function(){ drawing = false; });
+  canvas.addEventListener('pointercancel', function(){ drawing = false; });
+
+  dodgeWrap.addEventListener('pointermove', function(e){
+    var wrapR = dodgeWrap.getBoundingClientRect();
+    var btnR = dodgeBtn.getBoundingClientRect();
+    var bx = btnR.left + btnR.width/2, by = btnR.top + btnR.height/2;
+    var dist = Math.hypot(e.clientX-bx, e.clientY-by);
+    if(dist < 55){
+      var maxX = wrapR.width - btnR.width - 6;
+      var maxY = wrapR.height - btnR.height - 6;
+      dodgeBtn.style.left = clamp(Math.random()*maxX, 4, maxX)+'px';
+      dodgeBtn.style.top = clamp(Math.random()*maxY, 4, maxY)+'px';
+    }
+  });
+  dodgeBtn.addEventListener('click', function(){
+    setStatus(status, 'The Contract is bound in blood. Article 6 satisfied.', true);
+    seal('terms');
+  });
+}
+
+function initCaptcha(){
+  var grid = $('#emojiGrid');
+  var status = $('#captchaStatus');
+  var trialLabel = $('#trialLabel');
+  var demon = String.fromCodePoint(0x1F608);
+  var decoyPool = [0x1F607,0x1F47C,0x1F920,0x1F9D0,0x1F970,0x1F60A,0x263A,0x1F642,0x1F609,
+    0x1F60C,0x1F917,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607,0x1F607];
+  var CELLS = 25;
+  var ROUNDS_NEEDED = 3;
+  var streak = 0;
+
+  function renderRound(){
+    var pool = shuffle(decoyPool.slice());
+    var items = pool.slice(0, CELLS-1).map(function(c){ return String.fromCodePoint(c); });
+    var correctIndex = Math.floor(Math.random()*CELLS);
+    items.splice(correctIndex, 0, demon);
+    items = items.slice(0, CELLS);
+    if(items.indexOf(demon) === -1){ items[correctIndex] = demon; }
+    grid.innerHTML = '';
+    trialLabel.textContent = 'Trial ' + (streak+1) + ' of ' + ROUNDS_NEEDED;
+    items.forEach(function(emoji){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = emoji;
+      b.style.transform = 'rotate(' + (Math.random()*16-8) + 'deg) scale(' + (0.9+Math.random()*0.2).toFixed(2) + ')';
+      b.addEventListener('click', function(){
+        if(emoji === demon){
+          streak++;
+          if(streak >= ROUNDS_NEEDED){
+            setStatus(status, 'Three for three. You are, at minimum, not an angel.', true);
+            grid.querySelectorAll('button').forEach(function(btn){ btn.disabled = true; });
+            trialLabel.textContent = 'Trial ' + ROUNDS_NEEDED + ' of ' + ROUNDS_NEEDED + ' - cleared';
+            seal('captcha');
+          } else {
+            setStatus(status, 'Correct. The Board remains suspicious. Again.', null);
+            renderRound();
+          }
+        } else {
+          streak = 0;
+          setStatus(status, 'That one was virtuous. Streak broken. Begin again.', false);
+          shake();
+          renderRound();
+        }
+      });
+      grid.appendChild(b);
+    });
+  }
+  renderRound();
+}
+
+function initPatienceMeter(){
+  var bar = $('#patienceBar');
+  var text = $('#patienceText');
+  var lines = [
+    "The Board's patience: measured, but finite.",
+    'Someone in Accounting is watching this form.',
+    'This meter affects nothing. That is the cruelty.',
+    'A junior demon has been assigned to your case.',
+    'The wait is the point. Please continue waiting.',
+    'Your file has been placed in a slightly warmer pile.'
+  ];
+  var duration = 40;
+  var elapsed = 0;
+  setInterval(function(){
+    elapsed += 1;
+    var pct = 100 - (elapsed/duration)*100;
+    if(pct <= 0){
+      elapsed = 0;
+      text.textContent = lines[Math.floor(Math.random()*lines.length)];
+      pct = 100;
+    }
+    bar.style.width = clamp(pct,0,100)+'%';
+  }, 1000);
+}
+
+function initSubmit(){
+  var btn = $('#submitBtn');
+  var fill = $('#submitFill');
+  var label = $('#submitLabel');
+  var summary = $('#registerSummary');
+  var flash = $('#flashOverlay');
+  var raf = null, startTime = null;
+  var HOLD_MS = 2600;
+
+  function step(ts){
+    if(startTime === null) startTime = ts;
+    var pct = Math.min(100, ((ts-startTime)/HOLD_MS)*100);
+    fill.style.width = pct+'%';
+    if(pct >= 100){
+      complete();
+      return;
+    }
+    raf = requestAnimationFrame(step);
+  }
+  function reset(){
+    if(raf) cancelAnimationFrame(raf);
+    raf = null; startTime = null;
+    fill.style.width = '0%';
+  }
+  function complete(){
+    reset();
+    var missing = Object.keys(state).filter(function(k){ return !state[k]; });
+    if(missing.length){
+      shake();
+      label.textContent = 'Incomplete: ' + missing.join(', ');
+      setTimeout(function(){ label.textContent = 'Hold to Seal the Contract'; }, 2200);
+      return;
+    }
+    flash.classList.add('on');
+    setTimeout(function(){ flash.classList.remove('on'); }, 220);
+    var username = $('#usernameInput').value || '(unnamed wretch)';
+    var email = $('#emailInput').value || '(no address)';
+    var phone = $('#phoneStatus').textContent.replace('Hotline number: ','');
+    $('#modalTitle').textContent = 'Contract Sealed';
+    $('#modalBody').textContent = 'Welcome to Eternal Services. Your soul has been filed accordingly.';
+    $('#modalDetails').textContent =
+      'Soul Designation: ' + username + '\n' +
+      'Correspondence:    ' + email + '\n' +
+      'Hotline Number:    ' + phone + '\n' +
+      'Status:            DAMNED (in good standing)';
+    $('#successModal').hidden = false;
+  }
+  btn.addEventListener('pointerdown', function(){ startTime = null; raf = requestAnimationFrame(step); });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(evt){
+    btn.addEventListener(evt, reset);
+  });
+  $('#modalCloseBtn').addEventListener('click', function(){ $('#successModal').hidden = true; });
+}
+
+function initLoginPanel(){
+  var display = $('#loginBuffer');
+  var kb = $('#loginKeyboard');
+  var backspace = $('#loginBackspace');
+  createShuffleKeyboard(kb, display, backspace, function(){});
+
+  var track = $('#dragTrack');
+  var handle = $('#dragHandle');
+  var target = $('.drag-target', track);
+  var status = $('#loginCaptchaStatus');
+  var dragging = false, offsetX = 0, done = false;
+
+  handle.addEventListener('pointerdown', function(e){
+    if(done) return;
+    dragging = true;
+    offsetX = e.clientX - handle.getBoundingClientRect().left;
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', function(e){
+    if(!dragging) return;
+    var trackR = track.getBoundingClientRect();
+    var x = e.clientX - trackR.left - offsetX;
+    var max = trackR.width - handle.offsetWidth - 6;
+    x = clamp(x, 6, max);
+    handle.style.left = x+'px';
+    var targetR = target.getBoundingClientRect();
+    var handleCenter = trackR.left + x + handle.offsetWidth/2;
+    if(Math.abs(handleCenter - (targetR.left+targetR.width/2)) < 26){
+      done = true;
+      handle.classList.add('done');
+      handle.style.left = (max)+'px';
+      setStatus(status, 'Diligence proven. The pick has met the diamond.', true);
+    }
+  });
+  handle.addEventListener('pointerup', function(){
+    dragging = false;
+    if(!done){
+      handle.style.left = '6px';
+    }
+  });
+
+  $('#loginBtn').addEventListener('click', function(){
+    var user = $('#loginUsername').value;
+    var pass = display.textContent.replace(new RegExp(String.fromCodePoint(0x2022),'g'),'x');
+    var summary = $('#loginSummary');
+    if(!user || !done){
+      shake();
+      summary.textContent = 'The Ledger rejects this attempt: missing designation or unproven diligence.';
+      return;
+    }
+    summary.textContent = 'Consulting the Ledger...';
+    setTimeout(function(){
+      summary.textContent = 'Welcome back, ' + user + '. (This is a demonstration; no account was harmed, or exists.)';
+    }, 800);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  initEmbers();
+  initTabs();
+  initUsernameClause();
+  initEmailClause();
+  initPasswordClause();
+  initConfirmKeyboard();
+  initDobReels();
+  initPhoneSliders();
+  initTermsClause();
+  initCaptcha();
+  initPatienceMeter();
+  initSubmit();
+  initLoginPanel();
+});
+})();
+</script>

@@ -1,0 +1,8 @@
+{
+  "name": "damnation-portal-vercel",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "nodemailer": "^10.0.10"
+  }
+}
