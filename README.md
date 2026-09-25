@@ -2,7 +2,7 @@
 
 A registration and login page built to be as miserable to use as possible, while every part of it actually works. The theme is a bureaucratic Hell: you are signing your soul over to "Eternal Services." Nothing here is broken on purpose. Every annoying control is a deliberate design choice, and every field still collects a real value.
 
-## What's in this folder
+## What's in this repo
 
 ```
 damnation-portal/
