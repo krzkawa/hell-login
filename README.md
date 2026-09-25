@@ -4,8 +4,6 @@ A register and login page built to be as hostile as possible while still working
 
 **Live demo: https://hell.dino.icu/**
 
-It sends a real verification email through Gmail SMTP. The code is drawn in a runic cipher as an image, so it can't be copied as text.
-
 Nothing here is a real account system. Nothing is stored. Any password is accepted on login.
 
 ## What's in it
@@ -95,12 +93,6 @@ Custom domain: add it under the project's Domains, then point a CNAME at the tar
 - 5 sends per minute and 40 per instance lifetime. This is best-effort only, since serverless instances don't share state.
 
 The public endpoint can send mail from your Gmail. Set `ALLOWED_RECIPIENTS`, and delete the project or the Gmail env vars once the demo is over.
-
-On the live demo the real email may be restricted or switched off. If it fails, the on-page code still works.
-
-## Cipher
-
-Letters A to Z map to the Runic block starting at U+16A0. The key is behind the "Reveal the Cipher Key" button on the page.
 
 ## Stack
 
