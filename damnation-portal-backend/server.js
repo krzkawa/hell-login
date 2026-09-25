@@ -23,6 +23,8 @@ const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static('public'));
 
+// Minimal in-memory rate limit: this sends real email from a real account,
+// so a runaway client loop should not be able to fire off hundreds of sends.
 const sendLog = [];
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60 * 1000;
@@ -68,6 +70,9 @@ app.post('/api/send-verification', async (req, res) => {
       }
     }
 
+    // Deliberately hostile formatting: tiny type, low contrast, mixed alignment,
+    // a plain-text fallback that gives up entirely. The attached image carries the
+    // same jittered, noisy rune rendering used on the page itself.
     const html = `
       <div style="background:#12100e;color:#12100e;padding:24px;font-family:Georgia,serif;">
         <p style="font-size:6px;letter-spacing:3px;color:#2b2723;text-align:justify;line-height:0.9;">
