@@ -1,92 +1,113 @@
-# Damnation Portal
+# hell-login
 
-A registration and login page built to be as miserable to use as possible, while every part of it actually works. The theme is a bureaucratic Hell: you are signing your soul over to "Eternal Services." Nothing here is broken on purpose. Every annoying control is a deliberate design choice, and every field still collects a real value.
+A register and login page built to be as hostile as possible while still working. Made for a bad-UI contest. Every control does its job and every field collects a real value. The fiction is a bureaucracy of hell run by "Eternal Services".
 
-## What's in this repo
+**Live demo: https://hell.dino.icu/**
+
+It sends a real verification email through Gmail SMTP. The code is drawn in a runic cipher as an image, so it can't be copied as text.
+
+Nothing here is a real account system. Nothing is stored. Any password is accepted on login.
+
+## What's in it
+
+**Register (7 clauses, then hold a button)**
+
+1. Drag a fallen label off the input before you can type a username.
+2. Enter an email. The send button runs away from your cursor. The code arrives as runes and you decode it with an on-page key.
+3. Write a password under 7 rules that appear one at a time, then retype it on a keyboard that reshuffles after every keypress.
+4. Set a birth date on three drifting reels. One scrolls backwards. Releasing a reel locks it.
+5. Enter a phone number on ten sliders. Every digit sinks toward zero unless you latch it. One slider is inverted.
+6. Read an 18-article contract. Articles unlock on a timer (about 3 min 40 s total). Then sign on a canvas and catch a confirm button that dodges.
+7. Pick the demon out of 25 faces, three times in a row.
+
+Finish by holding the seal button for 2.6 seconds. You get a certificate with your details and signature.
+
+**Login**
+
+A username, the same shuffling keyboard, and a drag-the-pickaxe captcha.
+
+**Accessibility**
+
+Every widget has a keyboard route (arrow keys for reels and the login slider, Enter to sweep the label or sign). Live regions announce state, focus is visible, and reduced-motion is respected.
+
+## Layout
 
 ```
-damnation-portal/
-├── damnation-portal.html        Standalone page. No backend; the email is simulated.
-├── damnation-portal-backend/    Local Node.js version that sends real email via Gmail.
-│   ├── server.js
-│   ├── package.json
-│   ├── .env.example
-│   └── public/index.html
-└── vercel-deploy/               Same real-email version, packaged for Vercel.
-    ├── api/send-verification.js
-    ├── public/index.html
-    └── package.json
+damnation-portal.html        standalone, simulated email, older look
+damnation-portal-backend/    local Express server with real email
+vercel-deploy/               Vercel version (static page + serverless function)
+PRODUCT.md                   product context
 ```
 
-There are three ways to run it:
+`vercel-deploy/public/index.html` is the canonical page. The backend copy is kept identical.
 
-| Version | Sends real email | Setup |
-|---|---|---|
-| `damnation-portal.html` | No (simulated) | Open the file in a browser |
-| `damnation-portal-backend/` | Yes | Node.js and a Gmail App Password |
-| `vercel-deploy/` | Yes | Vercel account and a Gmail App Password |
+## Run locally
 
-## The torment, clause by clause
+Needs Node 20+ and a Gmail account with 2-Step Verification.
 
-**Register the Damned**
+```bash
+git clone https://github.com/krzkawa/hell-login.git
+cd hell-login/damnation-portal-backend
+cp .env.example .env
+```
 
-1. **Identification:** the "Soul Designation" label falls onto the input and blocks it. Drag it out of the way before you can type.
-2. **Correspondence:** enter an email address, then press the "Dispatch Malphas, Courier of the Ninth Circle" button. A fake SMTP log plays, and a six-letter verification code arrives written in runes. The code is drawn on a canvas, so it can't be selected or copied. It is jittered, rotated and speckled, and it redraws every 900ms. A cipher key is available; transliterate the runes by hand and type the code to verify.
-3. **The Blood Oath:** a Password Game-style rule list that reveals one rule at a time. The rules are: at least 8 characters, contains `666`, the digits sum to exactly 66, contains a synonym for suffering, no "god" or "heaven", and under 20 characters. Then you re-enter the password on an on-screen keyboard whose keys reshuffle after every click, in Comic Sans.
-4. **Date of Damnation:** three reels with no snapping. They drift on their own, and the Month reel responds to your drag in reverse. Drift alone never counts as a choice; you have to actually drag each reel.
-5. **The Summoning Hotline:** ten vertical sliders for a phone number. Every digit sinks back toward zero every few seconds unless you click its padlock. One slider is secretly inverted.
-6. **The Contract:** 18 articles of mock legal text. Scrolling is throttled so only one more article unlocks per real minute, with a live countdown. Once you reach the end, you sign in "blood" on a canvas, then catch a confirm button that dodges your cursor.
-7. **Trial of Discernment:** a 5x5 grid of near-identical faces. Find the one demon three times in a row. One miss resets the streak.
-8. **Seal:** hold the button for about 2.6 seconds to submit.
+Create an App Password at https://myaccount.google.com/apppasswords. Use that, not your normal password. Then edit `.env`:
 
-**Return, Wretch (Login):** the same shuffling keyboard for the password, plus a captcha where you drag a pickaxe onto a diamond.
+```
+GMAIL_USER=you@gmail.com
+GMAIL_APP_PASSWORD=your16charpassword
+PORT=3000
+```
 
-There is also a purely cosmetic "Board's patience" meter. It affects nothing.
+Install and run:
 
-## Option 1: Standalone page
+```bash
+npm install
+npm start
+```
 
-Open `damnation-portal.html` in a browser. It has no dependencies and no build step. The email step runs the full animation but sends nothing; the code shown on the page is the real one to decode.
+Open http://localhost:3000.
 
-## Option 2: Local backend with real email
+Without credentials the page still works. The email step reports a delivery failure and you can decode the code shown on the page.
 
-The backend is a small Express server that sends the verification code as a real, deliberately hard-to-read email through your own Gmail account.
+## Deploy to Vercel
 
-1. Turn on 2-Step Verification for the Gmail account you want to send from.
-2. Create an App Password at https://myaccount.google.com/apppasswords. Do not use your normal password.
-3. Configure and run:
-   ```bash
-   cd damnation-portal-backend
-   cp .env.example .env
-   # edit .env: set GMAIL_USER and GMAIL_APP_PASSWORD
-   npm install
-   npm start
-   ```
-4. Open http://localhost:3000.
+Set the project's root directory to `vercel-deploy`. Static files are in `public/`, the email endpoint is `api/send-verification.js`.
 
-If `.env` isn't configured, the server still starts and the page still works. The log reports the relay as delayed, and you can finish the form using the on-page code.
+Set these in the project's environment variables:
 
-The endpoint is `POST /api/send-verification` with `{ to, code, imageDataUrl }`. It validates input and rate-limits to 5 sends per minute.
+| Name | Required | Purpose |
+| --- | --- | --- |
+| `GMAIL_USER` | yes | Sending address |
+| `GMAIL_APP_PASSWORD` | yes | Gmail App Password |
+| `ALLOWED_RECIPIENTS` | no | Comma-separated list. If set, only these addresses get email |
 
-## Option 3: Deploy to Vercel
+Redeploy after changing env vars. If the site asks for a Vercel login, turn off Deployment Protection for the project.
 
-`vercel-deploy/` is the same project as a static page plus one serverless function.
+Custom domain: add it under the project's Domains, then point a CNAME at the target Vercel shows you.
 
-1. Deploy the `vercel-deploy` folder (for example with `npx vercel` from inside it, or through the Vercel dashboard).
-2. In the Vercel project, open Settings > Environment Variables and add:
-   - `GMAIL_USER`: the Gmail address that sends the mail
-   - `GMAIL_APP_PASSWORD`: your 16-character App Password
-   - `ALLOWED_RECIPIENTS` (optional, recommended): a comma-separated list of addresses the demo may email
-3. Redeploy so the variables take effect.
+## Email endpoint
 
-Vercel Authentication is on by default, which keeps the site private. Turn it off under Settings > Deployment Protection only when you want the demo to be public.
+`POST /api/send-verification` with `{ to, code, imageDataUrl }`.
 
-## Security notes
+- Same-origin requests only.
+- `code` must be 4 to 10 capital letters.
+- 5 sends per minute and 40 per instance lifetime. This is best-effort only, since serverless instances don't share state.
 
-- Never put your Gmail password or App Password in the page or commit it. Credentials belong in `.env` locally or in Vercel environment variables. `.env` is git-ignored.
-- The email endpoint is a public URL once deployed publicly. Anyone who finds it could try to send mail from your Gmail account. The built-in limits are best-effort only: an origin check, 5 sends per minute, and 40 sends per server instance. Serverless instances don't share counters, so these won't stop a determined abuser.
-- Set `ALLOWED_RECIPIENTS` for any public demo, and delete the project or remove the Gmail variables when you're done.
-- The page cannot send email on its own. Browsers can't speak SMTP, so real email always needs a backend.
+The public endpoint can send mail from your Gmail. Set `ALLOWED_RECIPIENTS`, and delete the project or the Gmail env vars once the demo is over.
 
-## Notes
+On the live demo the real email may be restricted or switched off. If it fails, the on-page code still works.
 
-- Everything is fictional. Eternal Services does not exist, and no souls were harmed.
+## Cipher
+
+Letters A to Z map to the Runic block starting at U+16A0. The key is behind the "Reveal the Cipher Key" button on the page.
+
+## Stack
+
+Single-file vanilla HTML, CSS and JS. Canvas for the runes and signature. Pointer Events for all drags. Express and Nodemailer for the local server, Nodemailer in a serverless function on Vercel. Fonts from Google Fonts: Grenze Gotisch, Libre Caslon Text, Special Elite.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+Eternal Services is fictional. No souls were harmed.
